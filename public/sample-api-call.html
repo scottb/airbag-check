@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Test</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.js" integrity="sha256-DZAnKJ/6XZ9si04Hgrsxu/8s717jcIzLy3oi35EouyE=" crossorigin="anonymous"></script>
+  </head>
+  <body>
+    <form>
+      <input type="text" name="plate" value="EY5079" maxlength="8">
+      <select name="state">
+        <option value="AL">AL</option>
+        <option value="AK">AK</option>
+        <option value="AZ">AZ</option>
+        <option value="AR">AR</option>
+        <option value="CA">CA</option>
+        <option value="CO">CO</option>
+        <option value="CT">CT</option>
+        <option value="DE">DE</option>
+        <option value="DC" selected>DC</option>
+        <option value="FL">FL</option>
+        <option value="GA">GA</option>
+        <option value="HI">HI</option>
+        <option value="ID">ID</option>
+        <option value="IL">IL</option>
+        <option value="IN">IN</option>
+        <option value="IA">IA</option>
+        <option value="KS">KS</option>
+        <option value="KY">KY</option>
+        <option value="LA">LA</option>
+        <option value="ME">ME</option>
+        <option value="MD">MD</option>
+        <option value="MA">MA</option>
+        <option value="MI">MI</option>
+        <option value="MN">MN</option>
+        <option value="MS">MS</option>
+        <option value="MO">MO</option>
+        <option value="MT">MT</option>
+        <option value="NE">NE</option>
+        <option value="NV">NV</option>
+        <option value="NH">NH</option>
+        <option value="NJ">NJ</option>
+        <option value="NM">NM</option>
+        <option value="NY">NY</option>
+        <option value="NC">NC</option>
+        <option value="ND">ND</option>
+        <option value="OH">OH</option>
+        <option value="OK">OK</option>
+        <option value="OR">OR</option>
+        <option value="PA">PA</option>
+        <option value="RI">RI</option>
+        <option value="SC">SC</option>
+        <option value="SD">SD</option>
+        <option value="TN">TN</option>
+        <option value="TX">TX</option>
+        <option value="UT">UT</option>
+        <option value="VT">VT</option>
+        <option value="VA">VA</option>
+        <option value="WA">WA</option>
+        <option value="WV">WV</option>
+        <option value="WI">WI</option>
+        <option value="WY">WY</option>
+      </select>
+      <button type="submit">Check</button>
+    </form>
+    <script>
+      function airbagRecallCheck(state, plate) {
+        if (state.length !== 2) throw new Error("State code must be two characters");
+        if (plate.length > 8) throw new Error("License plate must be no more than eight characters");
+        var url = "http://ec2-52-23-156-236.compute-1.amazonaws.com:3000/api/airbag/" + state + "/" + plate;
+        console.log("url", url);
+        return $.getJSON(url);
+      }
+
+      $("form").on("submit", function(event) {
+        event.preventDefault();
+        airbagRecallCheck(this.state.value, this.plate.value)
+        .done(function(data) {
+          if (data.error) {
+            console.error("Service error", data);
+          } else if (data.details === null) {
+            console.log("Unrecognized license plate");
+          } else if (data.recalls) {
+            console.log("Airbag recall identified");
+            console.log("Identified vehicle", data.details);
+          } else {
+            console.log("No airbag recall identified");
+            console.log("Identified vehicle", data.details);
+          }
+        })
+        .fail(function(err) {
+          console.error("Service failed", err);
+        });
+      });
+    </script>
+  </body>
+</html>

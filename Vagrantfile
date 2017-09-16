@@ -32,7 +32,7 @@ Vagrant.configure("2") do |config|
     sudo cp $PUMA_TOOLS/run-puma /usr/local/bin
     sudo chmod +x /usr/local/bin/run-puma
     sudo touch /etc/puma.conf
-    sudo /etc/init.d/puma add /vagrant ubuntu /vagrant/config/puma.rb /vagrant/log/puma.log
+    sudo /etc/init.d/puma add /vagrant ubuntu /vagrant/config/puma-production.rb /vagrant/log/puma.log
     sudo service puma start
   SHELL
 
@@ -43,11 +43,8 @@ Vagrant.configure("2") do |config|
     override.vm.provision "shell", inline: virtualbox_script
   end
 
-  # TODO: The aws provider isn't working because it attempts
-  # to run the provisioning scripts via ssh connecting directly
-  # to the box, but our security group requires proxying ssh via
-  # the bastion host.
-  # The script above should work, assuming a manual rsync, as follows:
+  # If the AWS provider fails, running the above script manually
+  # should work, after first performing a manual rsync, as follows:
   #   sudo mkdir /vagrant
   #   sudo chown ubuntu /vagrant
   #   rsync -aqz --exclude=.git --exclude=.vagrant ./ airbag:/vagrant/
@@ -56,9 +53,9 @@ Vagrant.configure("2") do |config|
     aws.security_groups = ["airbag-api"]
     aws.ami = "ami-cd0f5cb6"
     aws.instance_type = "t2.micro"
-    override.vm.box = "xcoo/xenial64"
+    override.vm.box = "aws-dummy"
     override.ssh.username = "ubuntu"
-    override.ssh.proxy_command = "ssh -q -A us-east -W %h:%p"
+    override.ssh.proxy_command = "ssh -q -J us-east"
     override.ssh.private_key_path = "/Users/scottb/.ssh/scottb-key-pair-useast.pem"
     override.vm.synced_folder ".", "/vagrant", type: "rsync", rsync__exclude: %w[.git]
     override.vm.provision "shell", inline: aws_script
