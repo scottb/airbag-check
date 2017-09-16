@@ -1,4 +1,4 @@
-source 'https://rubygems.org'
+source 'http://rubygems.org' # TODO: switch to https when the childprocess gem can bundle properly
 
 git_source(:github) do |repo_name|
   repo_name = "#{repo_name}/#{repo_name}" unless repo_name.include?("/")
@@ -6,7 +6,6 @@ git_source(:github) do |repo_name|
 end
 
 gem 'rails', '~> 5.1.4'
-# Use Puma as the app server
 gem 'puma', '~> 3.7'
 
 # Use Capistrano for deployment
