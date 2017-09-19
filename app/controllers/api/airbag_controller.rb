@@ -10,17 +10,21 @@ module Api
         browser.click_on("Check my vehicle")
 
         wait = Selenium::WebDriver::Wait.new(timeout: 30)
-        wait.until { /(Are You At Risk|We are having trouble identifying your vehicle)/.match(browser.body) }
+        wait.until { /(Are You At Risk|Your Vehicle is at HIGH RISK|We are having trouble identifying your vehicle)/.match(browser.body) }
 
         if browser.has_no_css?("#notice.correction")
           details = browser.all("#vehicle-details .detail").map(&:text)
 
           browser.click_on("Yes, this is my vehicle!")
 
-          recall_info = browser.find("#recall-info")
-          has_recalls = recall_info.find("h1").text == "There are active recalls on your vehicle."
-          airbag_recalls = has_recalls && !recall_info.has_no_css?("span.airbag-icon")
-          render json: { recalls: airbag_recalls, details: details }
+          if browser.has_no_css?("#alpha-warning")
+            recall_info = browser.find("#recall-info")
+            has_recalls = recall_info.find("h1").text == "There are active recalls on your vehicle."
+            airbag_recalls = has_recalls && !recall_info.has_no_css?("span.airbag-icon")
+            render json: { recalls: airbag_recalls, details: details }
+          else
+            render json: { recalls: true, details: details }
+          end
         else
           render json: { recalls: false, details: nil }
         end
